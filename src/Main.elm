@@ -3,7 +3,8 @@ module Main exposing (Hero, Model, Msg(..), main, update, view)
 import Browser
 import Html exposing (Html, button, div, h1, h2, input, li, span, text, ul)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (on, onInput)
+import Json.Decode as Decode
 
 
 main =
@@ -12,6 +13,7 @@ main =
 
 type Msg
     = Change String
+    | HeroSelected Hero
 
 
 type alias Hero =
@@ -28,9 +30,6 @@ type alias Model =
 init : Model
 init =
     let
-        hero =
-            { id = 1, name = "Windstorm" }
-
         heros =
             [ { id = 1, name = "Windstorm" }, { id = 2, name = "Dr Nice" } ]
     in
@@ -52,6 +51,9 @@ update msg model =
             in
             { model | selectedHero = newHero }
 
+        HeroSelected hero ->
+            { model | selectedHero = Just hero }
+
 
 view : Model -> Html Msg
 view model =
@@ -69,7 +71,7 @@ viewHeros model =
         , ul []
             (List.map
                 (\h ->
-                    li []
+                    li [ onClick (HeroSelected h) ]
                         [ span [] [ text (h.id |> String.fromInt) ]
                         , text h.name
                         ]
@@ -77,6 +79,11 @@ viewHeros model =
                 model.heros
             )
         ]
+
+
+onClick : Msg -> Html.Attribute Msg
+onClick msg =
+    on "click" (Decode.succeed msg)
 
 
 viewSelectedHero : Model -> Html Msg
