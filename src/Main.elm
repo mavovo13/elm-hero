@@ -5,6 +5,8 @@ import Html exposing (Html, button, div, h1, h2, input, li, span, text, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onInput)
 import Json.Decode as Decode
+import List.Extra exposing (findIndex, setAt)
+import Maybe exposing (withDefault)
 
 
 main =
@@ -41,15 +43,23 @@ update msg model =
     case msg of
         Change newName ->
             let
-                newHero =
+                ( newHero, newHeros ) =
                     case model.selectedHero of
                         Just hero ->
-                            Just { id = hero.id, name = newName }
+                            let
+                                -- selected Hero id should exists.
+                                i =
+                                    findIndex (\h -> h.name == hero.name) model.heros |> withDefault -1
+
+                                nh =
+                                    { id = hero.id, name = newName }
+                            in
+                            ( Just nh, setAt i nh model.heros )
 
                         Nothing ->
-                            Nothing
+                            ( Nothing, [] )
             in
-            { model | selectedHero = newHero }
+            { model | selectedHero = newHero, heros = newHeros }
 
         HeroSelected hero ->
             { model | selectedHero = Just hero }
